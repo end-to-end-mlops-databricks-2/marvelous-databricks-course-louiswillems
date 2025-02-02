@@ -1,0 +1,27 @@
+catalog_name: mlops_dev
+schema_name: louiswil
+
+
+parameters:
+  learning_rate: 0.01
+  n_estimators: 1000
+  max_depth: 6
+
+num_features:
+  - fixed acidity
+  - volatile acidity
+  - citric acid
+  - residual sugar
+  - chlorides
+  - free sulfur dioxide
+  - total sulfur dioxide
+  - density
+  - pH
+  - sulphates
+  - alcohol 
+
+cat_features:
+  - type
+
+
+target: quality
