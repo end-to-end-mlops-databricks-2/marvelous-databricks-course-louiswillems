@@ -18,7 +18,7 @@ num_features:
   - density
   - pH
   - sulphates
-  - alcohol 
+  - alcohol
 
 
 cat_features:

@@ -19,8 +19,6 @@ class DataProcessor:
         median_no_of_previous_cancellations = self.df["alcohol"].median()
         self.df["alcohol"].fillna(median_no_of_previous_cancellations, inplace=True)
 
-
-
         # Handle numeric features
         num_features = self.config.num_features
         for col in num_features:
@@ -34,7 +32,7 @@ class DataProcessor:
                 "sulphates": 0,
             },
             inplace=True,
-)
+        )
 
         # Convert categorical features to the appropriate type
         cat_features = self.config.cat_features

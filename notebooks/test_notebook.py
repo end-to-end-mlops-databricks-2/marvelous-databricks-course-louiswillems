@@ -33,8 +33,8 @@ df.head(2)
 with open("../project_config.yml", "r") as file:
     config = yaml.safe_load(file)
 
-print(config.get('catalog_name'))
-num_features = config.get('num_features')
+print(config.get("catalog_name"))
+num_features = config.get("num_features")
 print(num_features)
 
 
@@ -51,7 +51,7 @@ median_no_of_previous_cancellations = df["alcohol"].median()
 df["alcohol"].fillna(median_no_of_previous_cancellations, inplace=True)
 
 # Handle numeric features
-num_features = config.get('num_features')
+num_features = config.get("num_features")
 for col in num_features:
     df[col] = pd.to_numeric(df[col], errors="coerce")
 
@@ -66,12 +66,12 @@ df.fillna(
 )
 
 # Convert categorical features to the appropriate type
-cat_features = config.get('cat_features')
+cat_features = config.get("cat_features")
 for cat_col in cat_features:
-     df[cat_col] = df[cat_col].astype("category")
+    df[cat_col] = df[cat_col].astype("category")
 
 # Extract target and relevant features
-target = config.get('target')
+target = config.get("target")
 # relevant_columns = cat_features + num_features + [target]
 
 df["Id"] = range(1, len(df) + 1)
