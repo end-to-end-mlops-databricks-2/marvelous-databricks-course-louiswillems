@@ -35,7 +35,7 @@ build-backend = "setuptools.build_meta"
 where =["src"]
 include = ["wine_quality*"]
 
-[tool.ruff.lint]
+[tool.ruff]
 line-length = 120
 select = [
     "F",  # pyflakes rules
