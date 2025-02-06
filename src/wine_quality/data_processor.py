@@ -71,12 +71,25 @@ class DataProcessor:
             f"{self.config.catalog_name}.{self.config.schema_name}.test_set"
         )
 
-        spark.sql(
+        # spark.sql(
+        #     f"ALTER TABLE {self.config.catalog_name}.{self.config.schema_name}.train_set "
+        #     "SET TBLPROPERTIES (delta.enableChangeDataFeed = true);"
+        # )
+
+        # spark.sql(
+        #     f"ALTER TABLE {self.config.catalog_name}.{self.config.schema_name}.test_set "
+        #     "SET TBLPROPERTIES (delta.enableChangeDataFeed = true);"
+        # )
+
+
+
+    def enable_change_data_feed(self):
+        self.spark.sql(
             f"ALTER TABLE {self.config.catalog_name}.{self.config.schema_name}.train_set "
             "SET TBLPROPERTIES (delta.enableChangeDataFeed = true);"
         )
 
-        spark.sql(
+        self.spark.sql(
             f"ALTER TABLE {self.config.catalog_name}.{self.config.schema_name}.test_set "
             "SET TBLPROPERTIES (delta.enableChangeDataFeed = true);"
         )
