@@ -81,9 +81,7 @@ class FeatureLookUpModel:
         """
         Load training and testing data from Delta tables.
         """
-        self.train_set = self.spark.table(f"{self.catalog_name}.{self.schema_name}.train_set").drop(
-            "free_sulfur_dioxide, total_sulfur_dioxide"
-        )
+        self.train_set = self.spark.table(f"{self.catalog_name}.{self.schema_name}.train_set").drop("free_sulfur_dioxide", "total_sulfur_dioxide")
         self.test_set = self.spark.table(f"{self.catalog_name}.{self.schema_name}.test_set").toPandas()
 
         self.train_set = self.train_set.withColumn("Alcohol", self.train_set["Alcohol"].cast("int"))
