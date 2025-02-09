@@ -51,7 +51,7 @@ class FeatureLookUpModel:
         CREATE OR REPLACE TABLE {self.feature_table_name}
         (Id STRING NOT NULL, free_sulfur_dioxide INT, total_sulfur_dioxide INT);
         """)
-        self.spark.sql(f"ALTER TABLE {self.feature_table_name} ADD CONSTRAINT house_pk PRIMARY KEY(Id);")
+        self.spark.sql(f"ALTER TABLE {self.feature_table_name} ADD CONSTRAINT wine_quality_pk PRIMARY KEY(Id);")
         self.spark.sql(f"ALTER TABLE {self.feature_table_name} SET TBLPROPERTIES (delta.enableChangeDataFeed = true);")
 
         self.spark.sql(
@@ -67,12 +67,12 @@ class FeatureLookUpModel:
         Define a function to calculate the house's age.
         """
         self.spark.sql(f"""
-        CREATE OR REPLACE FUNCTION {self.function_name}(year_built INT)
+        CREATE OR REPLACE FUNCTION {self.function_name}(alcohol INT)
         RETURNS INT
         LANGUAGE PYTHON AS
         $$
         from datetime import datetime
-        return datetime.now().year - year_built
+        return alcohol - 0.5
         $$
         """)
         logger.info("✅ Feature function defined.")
@@ -82,11 +82,11 @@ class FeatureLookUpModel:
         Load training and testing data from Delta tables.
         """
         self.train_set = self.spark.table(f"{self.catalog_name}.{self.schema_name}.train_set").drop(
-            "OverallQual", "GrLivArea", "GarageCars"
+            "free_sulfur_dioxide, total_sulfur_dioxide"
         )
         self.test_set = self.spark.table(f"{self.catalog_name}.{self.schema_name}.test_set").toPandas()
 
-        self.train_set = self.train_set.withColumn("YearBuilt", self.train_set["YearBuilt"].cast("int"))
+        self.train_set = self.train_set.withColumn("Alcohol", self.train_set["Alcohol"].cast("int"))
         self.train_set = self.train_set.withColumn("Id", self.train_set["Id"].cast("string"))
 
         logger.info("✅ Data successfully loaded.")
@@ -101,7 +101,7 @@ class FeatureLookUpModel:
             feature_lookups=[
                 FeatureLookup(
                     table_name=self.feature_table_name,
-                    feature_names=["OverallQual", "GrLivArea", "GarageCars"],
+                    feature_names=["free_sulfur_dioxide, total_sulfur_dioxide"],
                     lookup_key="Id",
                 ),
                 FeatureFunction(

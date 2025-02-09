@@ -12,13 +12,12 @@ from loguru import logger
 from pyspark.sql import SparkSession
 
 from wine_quality.config import ProjectConfig, Tags
-from wine_quality.feature_lookup_model import FeatureLookUpModel
+from wine_quality.models.feature_lookup_model import FeatureLookUpModel
 
 # Configure tracking uri
 mlflow.set_tracking_uri("databricks")
 mlflow.set_registry_uri("databricks-uc")
 
-config = ProjectConfig.from_yaml(config_path="project_config.yml")
 spark = SparkSession.builder.getOrCreate()
 tags_dict = {"git_sha": "abcd12345", "branch": "week2"}
 tags = Tags(**tags_dict)
