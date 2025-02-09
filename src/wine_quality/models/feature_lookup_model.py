@@ -67,12 +67,12 @@ class FeatureLookUpModel:
         Define a function to calculate the house's age.
         """
         self.spark.sql(f"""
-        CREATE OR REPLACE FUNCTION {self.function_name}(alcohol INT)
+        CREATE OR REPLACE FUNCTION {self.function_name}(alcohol_test INT)
         RETURNS INT
         LANGUAGE PYTHON AS
         $$
         from datetime import datetime
-        return alcohol - 0.5
+        return alcohol_test - 0.5
         $$
         """)
         logger.info("✅ Feature function defined.")
@@ -105,15 +105,14 @@ class FeatureLookUpModel:
                 FeatureFunction(
                     udf_name=self.function_name,
                     output_name="wine_quality_age",
-                    input_bindings={"Alcohol": "alcohol"},
+                    input_bindings={"alcohol_test": "alcohol"},
                 ),
             ],
             exclude_columns=["update_timestamp_utc"],
         )
 
         self.training_df = self.training_set.load_df().toPandas()
-        current_year = datetime.now().year
-        self.test_set["wine_quality_age"] = current_year - self.test_set["alcohol"]
+        self.test_set["wine_quality_age"] = 1 - self.test_set["alcohol"]
 
         self.X_train = self.training_df[self.num_features + self.cat_features + ["wine_quality_age"]]
         self.y_train = self.training_df[self.target]
