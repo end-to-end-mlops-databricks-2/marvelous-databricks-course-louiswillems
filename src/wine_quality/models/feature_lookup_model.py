@@ -101,7 +101,7 @@ class FeatureLookUpModel:
             feature_lookups=[
                 FeatureLookup(
                     table_name=self.feature_table_name,
-                    feature_names=["free_sulfur_dioxide, total_sulfur_dioxide"],
+                    feature_names=["free_sulfur_dioxide", "total_sulfur_dioxide"],
                     lookup_key="Id",
                 ),
                 FeatureFunction(
