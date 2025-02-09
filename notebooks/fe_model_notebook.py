@@ -1,7 +1,6 @@
 # Databricks notebook source
-%pip install ../dist/wine_quality-0.0.3-py3-none-any.whl
+%pip install ../dist/wine_quality-0.0.6-py3-none-any.whl
 # COMMAND ----------
-import dbutils
 dbutils.library.restartPython()
 
 # COMMAND ----------

@@ -105,7 +105,7 @@ class FeatureLookUpModel:
                 FeatureFunction(
                     udf_name=self.function_name,
                     output_name="wine_quality_age",
-                    input_bindings={"alcohol": "Alcohol"},
+                    input_bindings={"alcohol": "alcohol"},
                 ),
             ],
             exclude_columns=["update_timestamp_utc"],
@@ -113,7 +113,7 @@ class FeatureLookUpModel:
 
         self.training_df = self.training_set.load_df().toPandas()
         current_year = datetime.now().year
-        self.test_set["wine_quality_age"] = current_year - self.test_set["Alcohol"]
+        self.test_set["wine_quality_age"] = current_year - self.test_set["alcohol"]
 
         self.X_train = self.training_df[self.num_features + self.cat_features + ["wine_quality_age"]]
         self.y_train = self.training_df[self.target]
