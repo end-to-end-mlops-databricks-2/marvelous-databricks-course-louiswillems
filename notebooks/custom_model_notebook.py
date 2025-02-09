@@ -39,7 +39,7 @@ custom_model.log_model()
 # COMMAND ----------
 run_id = mlflow.search_runs(experiment_names=["/Shared/wine-quality-custom"]).run_id[0]
 
-model = mlflow.pyfunc.load_model(f"runs:/{run_id}/pyfunc-gradientboostingregressor-pipeline-model")
+model = mlflow.pyfunc.load_model(f"runs:/{run_id}/pyfunc-wine-quality-model")
 
 # COMMAND ----------
 # Retrieve dataset for the current run

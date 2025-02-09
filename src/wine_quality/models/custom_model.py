@@ -149,7 +149,7 @@ class CustomModel:
 
             mlflow.pyfunc.log_model(
                 python_model=HousePriceModelWrapper(self.pipeline),
-                artifact_path="pyfunc-house-price-model",
+                artifact_path="pyfunc-wine-quality-model",
                 code_paths=self.code_paths,
                 conda_env=conda_env,
                 signature=signature
