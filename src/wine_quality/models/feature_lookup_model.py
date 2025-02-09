@@ -188,3 +188,11 @@ class FeatureLookUpModel:
 
         predictions = self.fe.score_batch(model_uri=model_uri, df=X)
         return predictions
+    
+
+    # <-- Add this new method to act as a predict method -->
+    def predict(self, X):
+        """
+        Alias method to load the latest model and predict on X.
+        """
+        return self.load_latest_model_and_predict(X)
