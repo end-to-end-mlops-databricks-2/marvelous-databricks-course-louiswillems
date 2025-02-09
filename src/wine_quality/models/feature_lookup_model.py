@@ -84,7 +84,7 @@ class FeatureLookUpModel:
         self.train_set = self.spark.table(f"{self.catalog_name}.{self.schema_name}.train_set").drop("free_sulfur_dioxide", "total_sulfur_dioxide")
         self.test_set = self.spark.table(f"{self.catalog_name}.{self.schema_name}.test_set").toPandas()
 
-        self.train_set = self.train_set.withColumn("Alcohol", self.train_set["Alcohol"].cast("int"))
+        self.train_set = self.train_set.withColumn("alcohol", self.train_set["alcohol"].cast("int"))
         self.train_set = self.train_set.withColumn("Id", self.train_set["Id"].cast("string"))
 
         logger.info("✅ Data successfully loaded.")
@@ -105,7 +105,7 @@ class FeatureLookUpModel:
                 FeatureFunction(
                     udf_name=self.function_name,
                     output_name="wine_quality_age",
-                    input_bindings={"alcohol": "alcohol"},
+                    input_bindings={"Alcohol": "alcohol"},
                 ),
             ],
             exclude_columns=["update_timestamp_utc"],
