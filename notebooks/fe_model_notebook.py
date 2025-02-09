@@ -1,4 +1,12 @@
 # Databricks notebook source
+
+# COMMAND ----------
+%pip install ../dist/wine_quality-0.0.1-py3-none-any.whl
+# COMMAND ----------
+dbutils.library.restartPython()
+
+# COMMAND ----------
+
 import mlflow
 from loguru import logger
 from pyspark.sql import SparkSession
