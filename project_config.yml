@@ -8,13 +8,13 @@ parameters:
   max_depth: 6
 
 num_features:
-  - fixed acidity
-  - volatile acidity
-  - citric acid
-  - residual sugar
+  - fixed_acidity
+  - volatile_acidity
+  - citric_acid
+  - residual_sugar
   - chlorides
-  - free sulfur dioxide
-  - total sulfur dioxide
+  - free_sulfur_dioxide
+  - total_sulfur_dioxide
   - density
   - pH
   - sulphates

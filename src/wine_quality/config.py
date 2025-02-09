@@ -13,6 +13,9 @@ class ProjectConfig(BaseModel):
     parameters: Dict[str, Any]  # Dictionary to hold model-related parameters
     # ab_test: Dict[str, Any]  # Dictionary to hold A/B test parameters
     # pipeline_id: str  # pipeline id for data live tables
+    experiment_name_basic: str = "/Shared/wine-quality-basic"
+    experiment_name_custom: str = "/Shared/wine-quality-custom"
+    experiment_name_fe: Optional[str] = None
 
     @classmethod
     def from_yaml(cls, config_path: str):

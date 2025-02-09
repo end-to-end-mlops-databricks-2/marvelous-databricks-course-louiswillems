@@ -5,7 +5,8 @@ import mlflow
 from pyspark.sql import SparkSession
 
 from wine_quality.config import ProjectConfig, Tags
-from wine_quality.models.basic_model import BasicModel
+from wine_quality.models.custom_model import CustomModel
+
 
 # COMMAND ----------
 # Default profile:
@@ -18,39 +19,39 @@ mlflow.set_registry_uri("databricks-uc")
 
 config = ProjectConfig.from_yaml(config_path="../project_config.yml")
 spark = SparkSession.builder.getOrCreate()
-tags = Tags(**{"git_sha": "abcd12345", "branch": "week2"}) #git_sha pas encore dynamique
+tags = Tags(**{"git_sha": "abcd12345", "branch": "week2"})
 
 # COMMAND ----------
 # Initialize model with the config path
-basic_model = BasicModel(config=config, tags=tags, spark=spark)
+custom_model = CustomModel(
+    config=config, tags=tags, spark=spark, code_paths=["../dist/wine_quality-0.0.1-py3-none-any.whl"]
+)
 
 # COMMAND ----------
-basic_model.load_data()
-basic_model.prepare_features()
+custom_model.load_data()
+custom_model.prepare_features()
 
 # COMMAND ----------
 # Train + log the model (runs everything including MLflow logging)
-basic_model.train()
-basic_model.log_model()
+custom_model.train()
+custom_model.log_model()
 
 # COMMAND ----------
-run_id = mlflow.search_runs(
-    experiment_names=["/Shared/wine-quality-basic"], filter_string="tags.branch='week2'"
-).run_id[0]
+run_id = mlflow.search_runs(experiment_names=["/Shared/wine-quality-custom"]).run_id[0]
 
-model = mlflow.sklearn.load_model(f"runs:/{run_id}/gradientboostingregressor-pipeline-model")
+model = mlflow.pyfunc.load_model(f"runs:/{run_id}/pyfunc-gradientboostingregressor-pipeline-model")
 
 # COMMAND ----------
 # Retrieve dataset for the current run
-basic_model.retrieve_current_run_dataset()
+custom_model.retrieve_current_run_dataset()
 
 # COMMAND ----------
 # Retrieve metadata for the current run
-basic_model.retrieve_current_run_metadata()
+custom_model.retrieve_current_run_metadata()
 
 # COMMAND ----------
 # Register model
-basic_model.register_model()
+custom_model.register_model()
 
 # COMMAND ----------
 # Predict on the test set
@@ -59,5 +60,5 @@ test_set = spark.table(f"{config.catalog_name}.{config.schema_name}.test_set").l
 
 X_test = test_set.drop(config.target).toPandas()
 
-predictions_df = basic_model.load_latest_model_and_predict(X_test)
+predictions_df = custom_model.load_latest_model_and_predict(X_test)
 # COMMAND ----------

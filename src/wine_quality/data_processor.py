@@ -13,8 +13,9 @@ class DataProcessor:
 
     def preprocess(self):
         """Preprocess the DataFrame stored in self.df"""
+
         # Handle missing values and convert data types as needed
-        self.df["fixed acidity"] = pd.to_numeric(self.df["fixed acidity"], errors="coerce")
+        self.df["fixed_acidity"] = pd.to_numeric(self.df["fixed_acidity"], errors="coerce")
 
         median_no_of_previous_cancellations = self.df["alcohol"].median()
         self.df["alcohol"].fillna(median_no_of_previous_cancellations, inplace=True)
@@ -27,7 +28,7 @@ class DataProcessor:
         # Fill missing values with mean or default values
         self.df.fillna(
             {
-                "citric acid": self.df["citric acid"].mean(),
+                "citric_acid": self.df["citric_acid"].mean(),
                 # "type_of_meal_plan": "None",
                 "sulphates": 0,
             },

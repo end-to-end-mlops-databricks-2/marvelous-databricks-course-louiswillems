@@ -2,8 +2,9 @@
 name = "wine-quality"
 version = "0.0.1"
 description = "Wine quality project"
-requires-python = ">=3.11, <3.12"
-dependencies = ["mlflow==2.17.0",
+requires-python = ">=3.11, <3.13"
+dependencies = [
+    "mlflow==2.17.0",
                 "cffi==1.17.1",
                 "cloudpickle==3.1.0",
                 "matplotlib==3.9.2",
@@ -17,8 +18,9 @@ dependencies = ["mlflow==2.17.0",
                 "databricks-feature-engineering==0.6",
                 "databricks-feature-lookup==1.2.0",
                 "databricks-sdk==0.32.0",
-                "pydantic==2.9.2"
-                ]
+                "pydantic==2.9.2",
+                "loguru>=0.7.3",
+]
 
 [project.optional-dependencies]
 dev = ["databricks-connect>=15.4.1, <16",

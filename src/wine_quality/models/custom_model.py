@@ -1,8 +1,11 @@
 import mlflow
 from loguru import logger
+from typing import List
 from mlflow import MlflowClient
 from mlflow.models import infer_signature
+from mlflow.utils.environment import _mlflow_conda_env
 import pandas as pd
+import numpy as np
 from pyspark.sql import SparkSession
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
@@ -10,8 +13,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 
-
 from wine_quality.config import ProjectConfig, Tags
+from wine_quality.utils import adjust_predictions
 
 """
 infer_signature (from mlflow.models) → Captures input-output schema for model tracking.
@@ -26,8 +29,17 @@ catalog_name, schema_name → Database schema names for Databricks tables.
 """
 
 
-class BasicModel:
-    def __init__(self, config: ProjectConfig, tags: Tags, spark: SparkSession):
+class HousePriceModelWrapper(mlflow.pyfunc.PythonModel):
+    def __init__(self, model):
+        self.model = model
+
+    def predict(self, context, model_input: pd.DataFrame | np.ndarray):
+        predictions = self.model.predict(model_input)
+        # looks like {"Prediction": 10000.0}
+        return {"Prediction": adjust_predictions(predictions[0])}
+
+class CustomModel:
+    def __init__(self, config: ProjectConfig, tags: Tags, spark: SparkSession, code_paths: List[str]):
         """
         Initialize the model with project configuration.
         """
@@ -41,8 +53,9 @@ class BasicModel:
         self.parameters = self.config.parameters
         self.catalog_name = self.config.catalog_name
         self.schema_name = self.config.schema_name
-        self.experiment_name = self.config.experiment_name_basic
+        self.experiment_name = self.config.experiment_name_custom
         self.tags = tags.dict()
+        self.code_paths = code_paths
 
     def load_data(self):
         """
@@ -55,7 +68,7 @@ class BasicModel:
         self.train_set_spark = self.spark.table(f"{self.catalog_name}.{self.schema_name}.train_set")
         self.train_set = self.train_set_spark.toPandas()
         self.test_set = self.spark.table(f"{self.catalog_name}.{self.schema_name}.test_set").toPandas()
-        self.data_version = "0" #describe history -> retrieve
+        self.data_version = "0" #describe history -> retrieve 
 
         self.X_train = self.train_set[self.num_features + self.cat_features]
         self.y_train = self.train_set[self.target]
@@ -87,7 +100,6 @@ class BasicModel:
         """
         Train the model.
         """
-        # mlflow.autolog(disable=True) # À tester
         logger.info("🚀 Starting training...")
         self.pipeline.fit(self.X_train, self.y_train)
 
@@ -96,9 +108,13 @@ class BasicModel:
         Log the model.
         """
         mlflow.set_experiment(self.experiment_name)
+        additional_pip_deps = ["pyspark==3.5.0"]
+        for package in self.code_paths:
+            whl_name = package.split('/')[-1]
+            additional_pip_deps.append(f"code/{whl_name}")
+
         with mlflow.start_run(tags=self.tags) as run:
             self.run_id = run.info.run_id
-
             y_pred = self.pipeline.predict(self.X_test)
 
             # Evaluate metrics
@@ -118,16 +134,24 @@ class BasicModel:
             mlflow.log_metric("r2_score", r2)
 
             # Log the model
-            signature = infer_signature(model_input=self.X_train, model_output=y_pred)
+            signature = infer_signature(model_input=self.X_train, 
+                                        model_output={'Prediction': 100000.0})
             dataset = mlflow.data.from_spark(
                 self.train_set_spark,
                 table_name=f"{self.catalog_name}.{self.schema_name}.train_set",
                 version=self.data_version
             )
             mlflow.log_input(dataset, context="training")
-            mlflow.sklearn.log_model(
-                sk_model=self.pipeline,
-                artifact_path="lightgbm-pipeline-model",
+
+            conda_env = _mlflow_conda_env(
+                additional_pip_deps=additional_pip_deps
+            )
+
+            mlflow.pyfunc.log_model(
+                python_model=HousePriceModelWrapper(self.pipeline),
+                artifact_path="pyfunc-house-price-model",
+                code_paths=self.code_paths,
+                conda_env=conda_env,
                 signature=signature
             )
 
@@ -137,17 +161,17 @@ class BasicModel:
         """
         logger.info("🔄 Registering the model in UC...")
         registered_model = mlflow.register_model(
-            model_uri=f'runs:/{self.run_id}/lightgbm-pipeline-model',
-            name=f"{self.catalog_name}.{self.schema_name}.wine_quality_model_basic",
+            model_uri=f'runs:/{self.run_id}/pyfunc-wine-quality-model',
+            name=f"{self.catalog_name}.{self.schema_name}.wine_quality_model_custom",
             tags=self.tags
         )
         logger.info(f"✅ Model registered as version {registered_model.version}.")
-
+        
         latest_version = registered_model.version
-
+        
         client = MlflowClient()
         client.set_registered_model_alias(
-            name=f"{self.catalog_name}.{self.schema_name}.wine_quality_model_basic",
+            name=f"{self.catalog_name}.{self.schema_name}.wine_quality_model_custom",
             alias="latest-model",
             version=latest_version
         )
@@ -182,13 +206,18 @@ class BasicModel:
         """
         logger.info("🔄 Loading model from MLflow alias 'production'...")
 
-        model_uri = f"models:/{self.catalog_name}.{self.schema_name}.house_prices_model_basic@latest-model"
-        model = mlflow.sklearn.load_model(model_uri)
+        model_uri = f"models:/{self.catalog_name}.{self.schema_name}.wine_quality_model_custom@latest-model"
+        model = mlflow.pyfunc.load_model(model_uri)
 
         logger.info("✅ Model successfully loaded.")
 
-        # Make predictions
+        # Make predictions: None is context
         predictions = model.predict(input_data)
+
+        # This also works
+        # model.unwrap_python_model().predict(None, input_data)
+        # check out this article:
+        # https://medium.com/towards-data-science/algorithm-agnostic-model-building-with-mlflow-b106a5a29535
 
         # Return predictions as a DataFrame
         return predictions
