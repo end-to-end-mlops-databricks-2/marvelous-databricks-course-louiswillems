@@ -64,7 +64,7 @@ X_test = test_set.drop("OverallQual", "GrLivArea", "GarageCars", config.target)
 
 
 # COMMAND ----------
-fe_model = FeatureLookUpModel(config=config)
+fe_model = FeatureLookUpModel(config=config, tags=tags, spark=spark)
 
 # Make predictions
 predictions = fe_model.predict(X_test)

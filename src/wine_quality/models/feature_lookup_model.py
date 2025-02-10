@@ -84,7 +84,7 @@ class FeatureLookUpModel:
         self.train_set = self.spark.table(f"{self.catalog_name}.{self.schema_name}.train_set").drop("free_sulfur_dioxide", "total_sulfur_dioxide")
         self.test_set = self.spark.table(f"{self.catalog_name}.{self.schema_name}.test_set").toPandas()
 
-        self.train_set = self.train_set.withColumn("alcohol", self.train_set["alcohol"].cast("int"))
+        self.train_set = self.train_set.withColumn("alcohol", self.train_set["alcohol"].cast("double"))
         self.train_set = self.train_set.withColumn("Id", self.train_set["Id"].cast("string"))
 
         logger.info("✅ Data successfully loaded.")
