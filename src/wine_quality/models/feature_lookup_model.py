@@ -67,11 +67,11 @@ class FeatureLookUpModel:
         Define a function to calculate the house's age.
         """
         self.spark.sql(f"""
-        CREATE OR REPLACE FUNCTION {self.function_name}(alcohol_test INT)
-        RETURNS INT
+        CREATE OR REPLACE FUNCTION {self.function_name}(alcohol_test DOUBLE)
+        RETURNS DOUBLE
         LANGUAGE PYTHON AS
         $$
-        from datetime import datetime
+        # Since Python uses float for double precision, this works fine.
         return alcohol_test - 0.5
         $$
         """)
